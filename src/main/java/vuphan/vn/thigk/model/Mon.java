@@ -2,10 +2,10 @@ package vuphan.vn.thigk.model;
 
 public class Mon {
     private Long id;
-    private String name;        // Tên món
-    private Long price;         // Giá (VNĐ)
-    private String description; // Mô tả
-    private Long danhMucId;     // Thuộc danh mục nào
+    private String name;
+    private Long price;         
+    private String description;
+    private Long danhMucId;
 
     public Mon() {}
 
