@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Thi Giua Ky</title>
+</head>
+<body>
+
+	<h1>Thực đơn</h1>
+	<label>Danh mục: </label>
+	<select id="danhMucSelect" onchange="loadMon()"></select>
+
+	<div>
+		<input type="hidden" id="monId">
+		<input type="text" id="name" placeholder="Tên món">
+		<input type="number" id="price" placeholder="Giá (VNĐ)" min="0" step="1000">
+		<input type="text" id="description" placeholder="Mô tả">
+		<button onclick="addMon()">Thêm</button>
+	</div>
+
+	<table border="1">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Tên món</th>
+				<th>Giá</th>
+				<th>Mô tả</th>
+				<th>Danh mục</th>
+			</tr>
+		</thead>
+		<tbody id="monTable"></tbody>
+	</table>
+
+
+	<script>
+		const APIDanhMuc = "/api/danhmucs";
+		const APIMon = "/api/mons";
+
+		// định dạng giá: 55000 -> 55.000 ₫
+		function formatPrice(price) {
+			return Number(price).toLocaleString("vi-VN") + " ₫";
+		}
+
+		// load danh mục vào select
+		async function loadDanhMuc() {
+			const res = await fetch(APIDanhMuc);
+			const danhMucs = await res.json();
+
+			const select = document.getElementById("danhMucSelect");
+			select.innerHTML = "";
+			danhMucs.forEach(danhMuc => {
+				select.innerHTML += `<option value="${danhMuc.id}">${danhMuc.name}</option>`;
+			});
+			loadMon();
+		}
+
+		// lấy id danh mục đang chọn
+		function currentDanhMucId() {
+			return document.getElementById("danhMucSelect").value;
+		}
+
+		// load danh sách món của danh mục đang chọn
+		async function loadMon() {
+			const res = await fetch(`${APIDanhMuc}/${currentDanhMucId()}/mons`);
+			const danhMuc = await res.json();
+
+			const tbody = document.getElementById("monTable");
+			tbody.innerHTML = "";
+			danhMuc.mons.forEach(mon => {
+				tbody.innerHTML += `
+				<tr>
+					<td>${mon.id}</td>
+					<td>${mon.name}</td>
+					<td>${formatPrice(mon.price)}</td>
+					<td>${mon.description}</td>
+					<td>${danhMuc.name}</td>
+				</tr>`;
+			});
+		}
+
+		// thêm món
+		async function addMon() {
+			const mon = {
+				name: document.getElementById("name").value,
+				price: Number(document.getElementById("price").value),
+				description: document.getElementById("description").value,
+				danhMucId: Number(currentDanhMucId())
+			};
+
+			await fetch(APIMon, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(mon)
+			});
+
+			document.getElementById("name").value = "";
+			document.getElementById("price").value = "";
+			document.getElementById("description").value = "";
+			loadMon();
+		}
+
+		loadDanhMuc();
+	</script>
+
+</body>
+</html>
